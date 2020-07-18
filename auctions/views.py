@@ -26,7 +26,7 @@ class NewListingForm(forms.Form):
     price = forms.IntegerField()
     image_url = forms.URLField(max_length=200)
     category = forms.ChoiceField(choices=CATEGORIES)
-    active = forms.BooleanField()
+    # active = forms.BooleanField()
 
     """
     CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
@@ -93,6 +93,7 @@ def register(request):
             user.save()
         except IntegrityError:
             return render(request, "auctions/register.html", {"message": "Username already taken."})
+
         login(request, user)
         return HttpResponseRedirect(reverse("auctions:index"))
     else:
@@ -101,8 +102,22 @@ def register(request):
 
 @login_required(login_url="auctions:login")
 def create(request):
-    if request.method == "POST":
-        form = NewListingForm(request.POST)
-        return render(request, "auctions/create.html", {"form": form})
+    errors = []
+    form = NewListingForm(request.POST)
+    print(User.objects.get(username=request.user).pk)
+
+    if request.method == "POST" and form.is_valid():
+        listing = Listing()
+        listing.user = User.objects.get(username=request.user)
+        listing.title = request.POST["title"]
+        listing.description = request.POST["description"]
+        listing.starting_bid = request.POST["starting_bid"]
+        listing.price = request.POST["price"]
+        listing.image_url = request.POST["image_url"]
+        listing.category = request.POST["category"]
+        listing.active = True
+
+        listing.save()
+        return HttpResponseRedirect(reverse("auctions:index"))
 
     return render(request, "auctions/create.html", {"form": NewListingForm()})
