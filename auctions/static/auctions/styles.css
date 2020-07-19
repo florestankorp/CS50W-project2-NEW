@@ -7,3 +7,11 @@ form {
     flex-direction: column;
     width: 25%;
 }
+
+img {
+    width: 65%;
+}
+
+button.btn.btn-primary {
+    vertical-align: top;
+}

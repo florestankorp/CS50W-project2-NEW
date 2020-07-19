@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Listing, User
+from .models import Comment, Listing, User
 
 """
 TODO:
@@ -103,4 +103,6 @@ def create(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.all().filter(pk=listing_id)
-    return render(request, "auctions/listing.html", {"listing": listing[0]})
+    comments = Comment.objects.all().filter(listing=listing[0])
+
+    return render(request, "auctions/listing.html", {"listing": listing[0], "comments": comments})
