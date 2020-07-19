@@ -23,34 +23,12 @@ class NewListingForm(forms.Form):
     title = forms.CharField(max_length=64)
     description = forms.CharField(max_length=256)
     starting_bid = forms.IntegerField()
-    price = forms.IntegerField()
     image_url = forms.URLField(max_length=200)
     category = forms.ChoiceField(choices=CATEGORIES)
-    # active = forms.BooleanField()
-
-    """
-    CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
-    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
-    title = models.CharField(max_length=64)
-    description = models.CharField(max_length=256)
-    starting_bid = models.PositiveIntegerField()
-    price = models.PositiveIntegerField()
-    image_url = models.URLField(max_length=200)
-    category = models.CharField(max_length=8, choices=CATEGORIES)
-    active = models.BooleanField()
-    """
 
 
-# class EditEntryForm(forms.Form):
-#     title = forms.CharField(label="Edit Entry")
-#     content = forms.CharField(widget=forms.Textarea)
-
-
-@login_required(login_url="auctions:login")
 def index(request):
-    user = request.user
-    listings = Listing.objects.all().filter(user=user)
-    return render(request, "auctions/index.html", {"listings": listings})
+    return render(request, "auctions/index.html", {"listings": Listing.objects.all()})
 
 
 def login_view(request):
@@ -112,12 +90,17 @@ def create(request):
         listing.title = request.POST["title"]
         listing.description = request.POST["description"]
         listing.starting_bid = request.POST["starting_bid"]
-        listing.price = request.POST["price"]
+        listing.price = listing.starting_bid
         listing.image_url = request.POST["image_url"]
         listing.category = request.POST["category"]
         listing.active = True
-
         listing.save()
+
         return HttpResponseRedirect(reverse("auctions:index"))
 
     return render(request, "auctions/create.html", {"form": NewListingForm()})
+
+
+def listing(request, listing_id):
+    listing = Listing.objects.all().filter(pk=listing_id)
+    return render(request, "auctions/listing.html", {"listing": listing[0]})

@@ -1,0 +1,49 @@
+{% extends "auctions/layout.html" %}
+{% block body %}
+<h2>{{listing.title}}</h2>
+<p>description: {{listing.description}}</p>
+<p>starting_bid: {{listing.starting_bid}}</p>
+<p>price: {{listing.price}}</p>
+<p>image_url: {{listing.image_url}}</p>
+<p>category: {{listing.category}}</p>
+<p>active: {{listing.active}}</p>
+<div class="container">
+    <div class="row">
+        <div class="card"
+             style="width: 18rem;">
+            <h5 class="card-header text-left">{{listing.title}}</h5>
+            <img class="card-img-top"
+                 src="{{listing.image_url}}"
+                 alt="Card image cap">
+            <div class="card-body">
+                <h2 class="card-text text-right">{{listing.price}}€</h2>
+                <p class="card-text text-left">{{listing.description}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <div class="card"
+style="width: 18rem;">
+<a href="{% url 'auctions:listing' listing.pk %}"
+   class="btn btn-primary">
+     <h5 class="card-header text-left">{{listing.title}}</h5>
+     <img class="card-img-top"
+          src="{{listing.image_url}}"
+          alt="Card image cap">
+     <div class="card-body">
+          <h2 class="card-text text-right">{{listing.price}}€</h2>
+          <p class="card-text text-left">{{listing.description}}</p>
+     </div>
+</a>
+</div> -->
+<!-- 
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    title = models.CharField(max_length=64)
+    description = models.CharField(max_length=256)
+    starting_bid = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
+    image_url = models.URLField(max_length=200)
+    category = models.CharField(max_length=8, choices=CATEGORIES)
+    active = models.BooleanField()
+ -->
+{% endblock %}
