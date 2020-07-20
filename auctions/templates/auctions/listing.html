@@ -1,6 +1,5 @@
 {% extends "auctions/layout.html" %}
 {% block body %}
-
 <div class="container-fluid">
     <h2>{{listing.title}}</h2>
     <p class="card-text"><small class="text-muted">{{listing.get_category_display}}</small></p>
@@ -8,8 +7,23 @@
         <div class="col-sm">
             <img src="{{listing.image_url}}"
                  alt="Image for {{listing.title}}">
-            <button type="button"
-                    class="btn btn-primary">Watch</button>
+            {% if request.user.is_authenticated %}
+            <form action="{% url 'auctions:listing' listing.pk %}"
+                  method="post">
+                {% csrf_token %}
+
+                {% if is_watched %}
+                <button type="submit"
+                        class="btn btn-primary"
+                        value={{listing.pk}}
+                        name={{listing.pk}}>Unwatch</button>
+                {% else %}
+                <button type="submit"
+                        class="btn btn-warning"
+                        value={{listing.pk}}
+                        name={{listing.pk}}>Watch</button>
+                {% endif %}
+            </form> {% endif %}
         </div>
         <div class="col-sm">
             <h2>{{listing.price}}€</h2>

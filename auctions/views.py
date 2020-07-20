@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Comment, Listing, User
+from .models import Comment, Listing, User, Watchlist
 
 """
 TODO:
@@ -80,9 +80,7 @@ def register(request):
 
 @login_required(login_url="auctions:login")
 def create(request):
-    errors = []
     form = NewListingForm(request.POST)
-    print(User.objects.get(username=request.user).pk)
 
     if request.method == "POST" and form.is_valid():
         listing = Listing()
@@ -102,7 +100,32 @@ def create(request):
 
 
 def listing(request, listing_id):
+    is_watched = False
     listing = Listing.objects.all().filter(pk=listing_id)
     comments = Comment.objects.all().filter(listing=listing[0])
 
-    return render(request, "auctions/listing.html", {"listing": listing[0], "comments": comments})
+    if request.method == "POST" and request.user.is_authenticated:
+        user = User.objects.get(username=request.user)
+
+        try:
+            watch_list = Watchlist.objects.get(user=user)
+            pass
+        except Exception:
+            watch_list = Watchlist()
+            watch_list.user = user
+            watch_list.save()
+            pass
+
+        listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
+        is_watched = bool(listing_in_watchlist)
+
+        if is_watched:
+            watch_list.listing.remove(Listing.objects.get(pk=listing_id))
+            is_watched = False
+        else:
+            watch_list.listing.add(Listing.objects.get(pk=listing_id))
+            is_watched = True
+
+    return render(
+        request, "auctions/listing.html", {"listing": listing[0], "comments": comments, "is_watched": is_watched}
+    )
