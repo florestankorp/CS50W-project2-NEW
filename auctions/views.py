@@ -104,28 +104,49 @@ def listing(request, listing_id):
     listing = Listing.objects.all().filter(pk=listing_id)
     comments = Comment.objects.all().filter(listing=listing[0])
 
-    if request.method == "POST" and request.user.is_authenticated:
+    if request.user.is_authenticated:
         user = User.objects.get(username=request.user)
 
-        try:
-            watch_list = Watchlist.objects.get(user=user)
-            pass
-        except Exception:
-            watch_list = Watchlist()
-            watch_list.user = user
-            watch_list.save()
-            pass
+        if request.method == "POST":
+            if "watch" in request.POST:
+                toggle_watched(user, listing)
+                return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+
+            if "bid" in request.POST and not request.POST["bid"] == "":
+                bid = int(request.POST["bid"])
+                place_bid(user, bid, listing)
+                return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
         listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
         is_watched = bool(listing_in_watchlist)
 
-        if is_watched:
-            watch_list.listing.remove(Listing.objects.get(pk=listing_id))
-            is_watched = False
-        else:
-            watch_list.listing.add(Listing.objects.get(pk=listing_id))
-            is_watched = True
-
     return render(
         request, "auctions/listing.html", {"listing": listing[0], "comments": comments, "is_watched": is_watched}
     )
+
+
+def toggle_watched(user, listing):
+    try:
+        watch_list = Watchlist.objects.get(user=user)
+        pass
+    except Exception:
+        watch_list = Watchlist()
+        watch_list.user = user
+        watch_list.save()
+        pass
+
+    listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
+    is_watched = bool(listing_in_watchlist)
+
+    if is_watched:
+        watch_list.listing.remove(Listing.objects.get(pk=listing[0].pk))
+    else:
+        watch_list.listing.add(Listing.objects.get(pk=listing[0].pk))
+
+
+def place_bid(user, bid, listing):
+    fetched_listing = Listing.objects.get(pk=listing[0].pk)
+
+    if bid > fetched_listing.price:
+        fetched_listing.price = bid
+        fetched_listing.save()

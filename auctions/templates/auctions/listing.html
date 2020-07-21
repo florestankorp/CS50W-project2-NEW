@@ -2,7 +2,17 @@
 {% block body %}
 <div class="container-fluid">
     <h2>{{listing.title}}</h2>
-    <p class="card-text"><small class="text-muted">{{listing.get_category_display}}</small></p>
+    <p class="card-text">
+        <small class="text-muted">{{listing.get_category_display}}</small> |
+        <small class="text-muted">Starting bid: {{listing.starting_bid}}€</small> |
+        <small class="text-muted">
+            {% if listing.active %}
+            Active
+            {% else %}
+            Closed
+            {% endif %}
+        </small>
+    </p>
     <div class="row">
         <div class="col-sm">
             <img src="{{listing.image_url}}"
@@ -15,28 +25,40 @@
                 {% if is_watched %}
                 <button type="submit"
                         class="btn btn-primary"
-                        value={{listing.pk}}
-                        name={{listing.pk}}>Unwatch</button>
+                        value=watch
+                        name=watch>Unwatch</button>
                 {% else %}
                 <button type="submit"
                         class="btn btn-warning"
-                        value={{listing.pk}}
-                        name={{listing.pk}}>Watch</button>
+                        value=watch
+                        name=watch>Watch</button>
                 {% endif %}
             </form> {% endif %}
         </div>
         <div class="col-sm">
             <h2>{{listing.price}}€</h2>
-            <p>Starting bid: {{listing.starting_bid}}€</p>
-            <p>Active: {{listing.active}}</p>
             <p>Description: {{listing.description}}</p>
             <div>
+                <h3>Comments</h3>
                 {% for comment in comments %}
                 <p>{{ comment.user }}: {{ comment.content }}</p>
                 {% empty %}
                 <p>No comments yet.</p>
                 {% endfor %}
             </div>
+        </div>
+        <div class="col-sm">
+            {% if request.user.is_authenticated %}
+            <form action="{% url 'auctions:listing' listing.pk %}"
+                  method="post">
+                {% csrf_token %}
+
+                <input type="number"
+                       name="bid"
+                       placeholder="Bid">
+                <input type="submit"
+                       class="btn btn-warning" />
+                {% endif %}
         </div>
     </div>
 </div>
