@@ -15,3 +15,16 @@ img {
 button.btn.btn-primary {
     vertical-align: top;
 }
+
+.watch-button {
+    background: none;
+    cursor: pointer;
+    color: orange;
+    font-size: 33px;
+    border: 0;
+    width: 0;
+}
+
+button:focus {
+    outline: 0;
+}

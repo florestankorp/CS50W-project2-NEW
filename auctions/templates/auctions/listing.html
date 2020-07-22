@@ -15,25 +15,25 @@
     </p>
     <div class="row">
         <div class="col-sm">
-            <img src="{{listing.image_url}}"
-                 alt="Image for {{listing.title}}">
             {% if request.user.is_authenticated %}
             <form action="{% url 'auctions:listing' listing.pk %}"
                   method="post">
                 {% csrf_token %}
 
                 {% if is_watched %}
-                <button type="submit"
-                        class="btn btn-primary"
+                <button class="watch-button"
+                        type="submit"
                         value=watch
-                        name=watch>Unwatch</button>
+                        name=watch><i class="fa fa-star-o"></i></button>
                 {% else %}
-                <button type="submit"
-                        class="btn btn-warning"
+                <button class="watch-button"
+                        type="submit"
                         value=watch
-                        name=watch>Watch</button>
+                        name=watch><i class="fa fa-star"></i></button>
                 {% endif %}
             </form> {% endif %}
+            <img src="{{listing.image_url}}"
+                 alt="Image for {{listing.title}}">
         </div>
         <div class="col-sm">
             <h2>{{listing.price}}€</h2>
