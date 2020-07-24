@@ -2,10 +2,23 @@ body {
     padding: 10px;
 }
 
-form {
+.login-form, .register-form {
     display: flex;
     flex-direction: column;
     width: 25%;
+}
+
+.watch-button-form {
+    right: 20%;
+    position: absolute;
+}
+
+.mt-90 {
+    margin-top: 90px;
+}
+
+.mt-10 {
+    margin-top: 10px;
 }
 
 img {
@@ -23,8 +36,55 @@ button.btn.btn-primary {
     font-size: 33px;
     border: 0;
     width: 0;
+    padding: 0;
 }
 
 button:focus {
     outline: 0;
+}
+
+a.btn.btn-primary {
+    color: initial;
+    background-color: initial;
+    border: 0;
+}
+
+.listing {
+    display: flex;
+}
+
+.bid {
+    display: flex;
+    justify-content: space-between;
+}
+
+.price {
+    font-weight: bold;
+    color: orangered;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.bolder {
+    font-weight: 900;
+}
+
+.listing-info {
+    border-right: lightgrey 1px solid;
+}
+
+.error {
+    padding: 0;
+    list-style: none;
+    color: orangered;
+}
+
+ul {
+    padding: 0;
 }

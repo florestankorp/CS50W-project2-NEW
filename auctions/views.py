@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -108,13 +109,32 @@ def listing(request, listing_id):
         user = User.objects.get(username=request.user)
 
         if request.method == "POST":
-            if "watch" in request.POST:
+            print(request.POST)
+            if request.POST.get("watch"):
                 toggle_watched(user, listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
-            if "bid" in request.POST and not request.POST["bid"] == "":
+            if "bid" in request.POST:
+                if request.POST["bid"] == "":
+                    messages.add_message(request, messages.ERROR, "Please enter a bid", extra_tags="bid")
+                    return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+
                 bid = int(request.POST["bid"])
-                place_bid(user, bid, listing)
+
+                if place_bid(user, bid, listing) == 0:
+                    messages.add_message(request, messages.SUCCESS, "Success")
+                    return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+                else:
+                    messages.add_message(request, messages.ERROR, "The bid was too low")
+                    return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+
+            if "comment" in request.POST:
+                if request.POST["comment"] == "":
+                    messages.add_message(request, messages.ERROR, "Please enter a comment", extra_tags="comment")
+                    return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+
+                comment = request.POST["comment"]
+                place_comment(user, comment, listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
         listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
@@ -150,3 +170,22 @@ def place_bid(user, bid, listing):
     if bid > fetched_listing.price:
         fetched_listing.price = bid
         fetched_listing.save()
+        return 0
+    else:
+        return 1
+
+
+def place_comment(user, comment, listing):
+    fetched_comment = Comment(user=user, listing=listing[0], content=comment)
+    fetched_comment.save()
+
+
+"""
+
+if
+- user is signed in
+- user is the one who created the listing
+- then user should have the ability to “close” the auction from this page, 
+- which makes the highest bidder the winner of the auction and 
+- which makes the listing no longer active.
+"""
