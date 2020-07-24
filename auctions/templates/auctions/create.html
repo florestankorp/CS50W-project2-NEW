@@ -5,11 +5,41 @@ Create Listing
 {% endblock %}
 
 {% block body %}
-<h1>Create Listing</h1>
-<form action="{% url 'auctions:create' %}"
+
+<h2>Create Listing</h2>
+
+<form class="listing-form"
+      action="{% url 'auctions:create' %}"
       method="post">
   {% csrf_token %}
-  {{ form }}
-  <input type="submit">
+
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input class="form-control"
+           type="text"
+           name="title"
+           id="title">
+  </div>
+
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea class="form-control"
+              type="text"
+              name="description"
+              id="description"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="category">Category</label>
+    <select class="form-control"
+            name="category"
+            id="category">
+      {% for category in categories %}
+      <option value="{{category}}">{{category}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
 </form>
+
 {% endblock %}

@@ -2,7 +2,7 @@ body {
     padding: 10px;
 }
 
-.login-form, .register-form {
+.login-form, .register-form, .listing-form {
     display: flex;
     flex-direction: column;
     width: 25%;
@@ -77,6 +77,7 @@ a.btn.btn-primary {
 
 .listing-info {
     border-right: lightgrey 1px solid;
+    padding: 20px;
 }
 
 .error {

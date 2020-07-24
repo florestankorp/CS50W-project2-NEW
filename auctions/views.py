@@ -16,7 +16,7 @@ TODO:
 """
 
 
-CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
+CATEGORIES = ["Laptop", "Console", "Gadget", "Game", "TV"]
 
 
 class NewListingForm(forms.Form):
@@ -81,23 +81,23 @@ def register(request):
 
 @login_required(login_url="auctions:login")
 def create(request):
-    form = NewListingForm(request.POST)
+    # form = NewListingForm(request.POST)
 
-    if request.method == "POST" and form.is_valid():
-        listing = Listing()
-        listing.user = User.objects.get(username=request.user)
-        listing.title = request.POST["title"]
-        listing.description = request.POST["description"]
-        listing.starting_bid = request.POST["starting_bid"]
-        listing.price = listing.starting_bid
-        listing.image_url = request.POST["image_url"]
-        listing.category = request.POST["category"]
-        listing.active = True
-        listing.save()
+    # if request.method == "POST" and form.is_valid():
+    #     listing = Listing()
+    #     listing.user = User.objects.get(username=request.user)
+    #     listing.title = request.POST["title"]
+    #     listing.description = request.POST["description"]
+    #     listing.starting_bid = request.POST["starting_bid"]
+    #     listing.price = listing.starting_bid
+    #     listing.image_url = request.POST["image_url"]
+    #     listing.category = request.POST["category"]
+    #     listing.active = True
+    #     listing.save()
 
-        return HttpResponseRedirect(reverse("auctions:index"))
+    #     return HttpResponseRedirect(reverse("auctions:index"))
 
-    return render(request, "auctions/create.html", {"form": NewListingForm()})
+    return render(request, "auctions/create.html", {"categories": CATEGORIES})
 
 
 def listing(request, listing_id):
@@ -109,7 +109,6 @@ def listing(request, listing_id):
         user = User.objects.get(username=request.user)
 
         if request.method == "POST":
-            print(request.POST)
             if request.POST.get("watch"):
                 toggle_watched(user, listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
