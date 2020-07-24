@@ -10,13 +10,6 @@ from django.urls import reverse
 
 from .models import Comment, Listing, User, Watchlist
 
-"""
-TODO:
-* prices don't handle decimals!
-
-"""
-
-
 CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
 
 
@@ -45,7 +38,6 @@ def categories(request):
 
 
 def category(request, category):
-    print(category)
     listings = Listing.objects.filter(category=category)
     fetched_category = listings[0].get_category_display
     return render(request, "auctions/category.html", {"listings": listings, "category": fetched_category})
@@ -121,11 +113,13 @@ def create(request):
 def listing(request, listing_id):
     is_watched = False
     is_owner = False
+
     listing = Listing.objects.filter(pk=listing_id)
     comments = Comment.objects.filter(listing=listing[0])
 
     if request.user.is_authenticated:
         user = User.objects.get(username=request.user)
+
         try:
             is_owner = bool(Listing.objects.get(user=user, pk=listing[0].pk))
         except Listing.DoesNotExist:
@@ -136,7 +130,7 @@ def listing(request, listing_id):
                 toggle_watched(user, listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
-            if "close" in request.POST:
+            elif "close" in request.POST:
                 close_listing(listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
@@ -147,6 +141,7 @@ def listing(request, listing_id):
 
                 bid = int(request.POST["bid"])
 
+                # if bid was placed successfully it returns 0
                 if place_bid(user, bid, listing) == 0:
                     messages.add_message(request, messages.SUCCESS, "Success")
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
@@ -156,6 +151,8 @@ def listing(request, listing_id):
 
             if "comment" in request.POST:
                 if request.POST["comment"] == "":
+
+                    # extra_tags in message to filter on message types in template
                     messages.add_message(request, messages.ERROR, "Please enter a comment", extra_tags="comment")
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
@@ -174,6 +171,7 @@ def listing(request, listing_id):
 
 
 def toggle_watched(user, listing):
+    # if watchlist is not found create it
     try:
         watch_list = Watchlist.objects.get(user=user)
         pass
@@ -212,14 +210,3 @@ def close_listing(listing):
 def place_comment(user, comment, listing):
     fetched_comment = Comment(user=user, listing=listing[0], content=comment)
     fetched_comment.save()
-
-
-"""
-
-if
-- user is signed in
-- user is the one who created the listing
-- then user should have the ability to “close” the auction from this page, 
-- which makes the highest bidder the winner of the auction and 
-- which makes the listing no longer active.
-"""
