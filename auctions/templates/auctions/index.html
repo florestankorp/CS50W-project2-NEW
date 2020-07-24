@@ -1,9 +1,6 @@
 {% extends "auctions/layout.html" %}
 {% block body %}
-<!-- title, description, current price, and photo -->
 <h2>Active Listings</h2>
-<!-- <div class="container"> -->
-<!-- <div class="row"> -->
 
 <div class="card-columns">
      {% for listing in listings %}
@@ -23,6 +20,4 @@
      </div>
      {% endfor %}
 </div>
-<!-- </div> -->
-<!-- </div> -->
 {% endblock %}

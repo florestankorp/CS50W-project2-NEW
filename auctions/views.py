@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -16,7 +17,7 @@ TODO:
 """
 
 
-CATEGORIES = ["Laptop", "Console", "Gadget", "Game", "TV"]
+CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
 
 
 class NewListingForm(forms.Form):
@@ -30,6 +31,24 @@ class NewListingForm(forms.Form):
 
 def index(request):
     return render(request, "auctions/index.html", {"listings": Listing.objects.all()})
+
+
+@login_required(login_url="auctions:login")
+def watchlist(request):
+    user = User.objects.get(username=request.user)
+    watch_list = Watchlist.objects.get(user=user)
+    return render(request, "auctions/watchlist.html", {"listings": watch_list.listing.all()})
+
+
+def categories(request):
+    return render(request, "auctions/categories.html", {"categories": CATEGORIES})
+
+
+def category(request, category):
+    print(category)
+    listings = Listing.objects.filter(category=category)
+    fetched_category = listings[0].get_category_display
+    return render(request, "auctions/category.html", {"listings": listings, "category": fetched_category})
 
 
 def login_view(request):
@@ -81,36 +100,44 @@ def register(request):
 
 @login_required(login_url="auctions:login")
 def create(request):
-    # form = NewListingForm(request.POST)
 
-    # if request.method == "POST" and form.is_valid():
-    #     listing = Listing()
-    #     listing.user = User.objects.get(username=request.user)
-    #     listing.title = request.POST["title"]
-    #     listing.description = request.POST["description"]
-    #     listing.starting_bid = request.POST["starting_bid"]
-    #     listing.price = listing.starting_bid
-    #     listing.image_url = request.POST["image_url"]
-    #     listing.category = request.POST["category"]
-    #     listing.active = True
-    #     listing.save()
+    if request.method == "POST":
+        listing = Listing()
+        listing.user = User.objects.get(username=request.user)
+        listing.title = request.POST["title"]
+        listing.description = request.POST["description"]
+        listing.starting_bid = request.POST["starting-bid"]
+        listing.price = listing.starting_bid
+        listing.image_url = request.POST["url"]
+        listing.category = request.POST["category"]
+        listing.active = True
+        listing.save()
 
-    #     return HttpResponseRedirect(reverse("auctions:index"))
+        return HttpResponseRedirect(reverse("auctions:index"))
 
     return render(request, "auctions/create.html", {"categories": CATEGORIES})
 
 
 def listing(request, listing_id):
     is_watched = False
-    listing = Listing.objects.all().filter(pk=listing_id)
-    comments = Comment.objects.all().filter(listing=listing[0])
+    is_owner = False
+    listing = Listing.objects.filter(pk=listing_id)
+    comments = Comment.objects.filter(listing=listing[0])
 
     if request.user.is_authenticated:
         user = User.objects.get(username=request.user)
+        try:
+            is_owner = bool(Listing.objects.get(user=user, pk=listing[0].pk))
+        except Listing.DoesNotExist:
+            is_owner = False
 
         if request.method == "POST":
-            if request.POST.get("watch"):
+            if "watch" in request.POST:
                 toggle_watched(user, listing)
+                return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
+
+            if "close" in request.POST:
+                close_listing(listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
             if "bid" in request.POST:
@@ -140,7 +167,9 @@ def listing(request, listing_id):
         is_watched = bool(listing_in_watchlist)
 
     return render(
-        request, "auctions/listing.html", {"listing": listing[0], "comments": comments, "is_watched": is_watched}
+        request,
+        "auctions/listing.html",
+        {"listing": listing[0], "comments": comments, "is_watched": is_watched, "is_owner": is_owner},
     )
 
 
@@ -172,6 +201,12 @@ def place_bid(user, bid, listing):
         return 0
     else:
         return 1
+
+
+def close_listing(listing):
+    fetched_listing = Listing.objects.get(pk=listing[0].pk)
+    fetched_listing.active = False
+    fetched_listing.save()
 
 
 def place_comment(user, comment, listing):

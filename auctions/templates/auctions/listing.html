@@ -31,19 +31,18 @@
         <div class="col-sm">
             <h2>{{listing.title}}</h2>
             <p class="card-text">
-                <small class="text-muted">{{listing.get_category_display}}</small> |
+                <small class="text-muted">{{listing}}</small> |
                 <small class="text-muted">Starting bid: {{listing.starting_bid}}€</small> |
-                <small class="text-muted">
-                    {% if listing.active %}
-                    Active
-                    {% else %}
-                    Closed
-                    {% endif %}
+                {% if listing.active %}
+                <small class="bold text-primary">Active</small>
+                {% else %}
+                <small class="bold text-danger">Closed</small>
+                {% endif %}
                 </small>
             </p>
             <div class="bid">
                 <h3>Current price:</h3>
-                <h2 class="price">{{listing.price}}€</h2>
+                <h2 class="text-success bold">{{listing.price}}€</h2>
             </div>
             {% if request.user.is_authenticated and listing.active %}
             <form action="{% url 'auctions:listing' listing.pk %}"
@@ -60,7 +59,20 @@
                     </span>
                 </div>
             </form>
+            {% endif %}
+            {% if request.user.is_authenticated and listing.active and is_owner %}
+            <form class="pull-right mt-5"
+                  action="{% url 'auctions:listing' listing.pk %}"
+                  method="post">
+                {% csrf_token %}
+                <span class="input-group-prepend">
+                    <button class="btn btn-danger close-button"
+                            type="submit"
+                            name=close
+                            class="btn btn-primary">Close</button>
+                </span>
 
+            </form>
             {% endif %}
             {% if messages %}
             <ul class="mt-10">
@@ -107,7 +119,6 @@
                         {% endfor %}
                     </div>
             </div>
-
         </div>
     </div>
 </div>

@@ -51,6 +51,7 @@ a.btn.btn-primary {
 
 .listing {
     display: flex;
+    border-right: lightgrey 1px solid;
 }
 
 .bid {
@@ -76,7 +77,6 @@ a.btn.btn-primary {
 }
 
 .listing-info {
-    border-right: lightgrey 1px solid;
     padding: 20px;
 }
 
@@ -88,4 +88,9 @@ a.btn.btn-primary {
 
 ul {
     padding: 0;
+}
+
+.close-button {
+    width: 75px;
+    border-radius: 0;
 }
