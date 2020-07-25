@@ -97,16 +97,16 @@ def register(request):
 def create(request):
 
     if request.method == "POST":
-        listing = Listing()
-        listing.user = User.objects.get(username=request.user)
-        listing.title = request.POST["title"]
-        listing.description = request.POST["description"]
-        listing.starting_bid = request.POST["starting-bid"]
-        listing.price = listing.starting_bid
-        listing.image_url = request.POST["url"]
-        listing.category = request.POST["category"]
-        listing.active = True
-        listing.save()
+        fetched_listing = Listing()
+        fetched_listing.user = User.objects.get(username=request.user)
+        fetched_listing.title = request.POST["title"]
+        fetched_listing.description = request.POST["description"]
+        fetched_listing.starting_bid = request.POST["starting-bid"]
+        fetched_listing.price = fetched_listing.starting_bid
+        fetched_listing.image_url = request.POST["url"]
+        fetched_listing.category = request.POST["category"]
+        fetched_listing.active = True
+        fetched_listing.save()
 
         return HttpResponseRedirect(reverse("auctions:index"))
 
