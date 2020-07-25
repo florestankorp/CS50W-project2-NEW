@@ -15,7 +15,11 @@ class Listing(models.Model):
     price = models.PositiveIntegerField()
     image_url = models.URLField(max_length=200)
     category = models.CharField(max_length=8, choices=CATEGORIES)
-    active = models.BooleanField()
+    active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        self.price = self.starting_bid
+        super(Listing, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title}"
@@ -40,9 +44,8 @@ class Comment(models.Model):
 
 
 class Watchlist(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     listing = models.ManyToManyField(Listing, blank=True)
-    # user can only have one watchlist!
 
     def __str__(self):
         return f"{self.user}"

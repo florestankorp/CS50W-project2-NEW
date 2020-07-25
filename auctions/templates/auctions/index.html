@@ -4,8 +4,7 @@
 
 <div class="card-columns">
      {% for listing in listings %}
-     <div class="card"
-          style="width: 18rem;">
+     <div class="card">
           <a href="{% url 'auctions:listing' listing.pk %}"
              class="btn">
                <h5 class="card-header text-left">{{listing.title}}</h5>

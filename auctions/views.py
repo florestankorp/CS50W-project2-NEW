@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import FieldError
 from django.db import IntegrityError
 from django.db.models import Max
 from django.http import HttpResponseRedirect
@@ -32,7 +33,13 @@ def index(request):
 @login_required(login_url="auctions:login")
 def watchlist(request):
     user = User.objects.get(username=request.user)
-    watch_list = Watchlist.objects.get(user=user)
+    try:
+        watch_list = Watchlist.objects.get(user=user)
+    except (UnboundLocalError, Watchlist.DoesNotExist):
+        watch_list = Watchlist()
+        watch_list.user = user
+        watch_list.save()
+
     return render(request, "auctions/watchlist.html", {"listings": watch_list.listing.all()})
 
 
@@ -117,6 +124,7 @@ def listing(request, listing_id):
     is_watched = False
     is_owner = False
     winner = None
+    user = request.user
 
     fetched_listing = Listing.objects.filter(pk=listing_id)
     comments = Comment.objects.filter(listing=fetched_listing[0])
