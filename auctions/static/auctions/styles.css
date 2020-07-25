@@ -94,3 +94,8 @@ ul {
     width: 75px;
     border-radius: 0;
 }
+
+.winner {
+    display: flex;
+    justify-content: space-between;
+}

@@ -1,14 +1,16 @@
+# pylint: disable=C0114
+
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Max
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Comment, Listing, User, Watchlist
+from .models import Bid, Comment, Listing, User, Watchlist
 
 CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
 
@@ -23,7 +25,8 @@ class NewListingForm(forms.Form):
 
 
 def index(request):
-    return render(request, "auctions/index.html", {"listings": Listing.objects.all()})
+    active_listings = Listing.objects.all().filter(active=True)
+    return render(request, "auctions/index.html", {"listings": active_listings})
 
 
 @login_required(login_url="auctions:login")
@@ -37,8 +40,8 @@ def categories(request):
     return render(request, "auctions/categories.html", {"categories": CATEGORIES})
 
 
-def category(request, category):
-    listings = Listing.objects.filter(category=category)
+def category(request, category_param):
+    listings = Listing.objects.filter(category=category_param)
     fetched_category = listings[0].get_category_display
     return render(request, "auctions/category.html", {"listings": listings, "category": fetched_category})
 
@@ -113,25 +116,26 @@ def create(request):
 def listing(request, listing_id):
     is_watched = False
     is_owner = False
+    winner = None
 
-    listing = Listing.objects.filter(pk=listing_id)
-    comments = Comment.objects.filter(listing=listing[0])
+    fetched_listing = Listing.objects.filter(pk=listing_id)
+    comments = Comment.objects.filter(listing=fetched_listing[0])
 
     if request.user.is_authenticated:
         user = User.objects.get(username=request.user)
 
         try:
-            is_owner = bool(Listing.objects.get(user=user, pk=listing[0].pk))
+            is_owner = bool(Listing.objects.get(user=user, pk=fetched_listing[0].pk))
         except Listing.DoesNotExist:
             is_owner = False
 
         if request.method == "POST":
             if "watch" in request.POST:
-                toggle_watched(user, listing)
+                toggle_watched(user, fetched_listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
             elif "close" in request.POST:
-                close_listing(listing)
+                close_listing(fetched_listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
             if "bid" in request.POST:
@@ -142,8 +146,9 @@ def listing(request, listing_id):
                 bid = int(request.POST["bid"])
 
                 # if bid was placed successfully it returns 0
-                if place_bid(user, bid, listing) == 0:
+                if place_bid(bid, user, fetched_listing) == 0:
                     messages.add_message(request, messages.SUCCESS, "Success")
+
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
                 else:
                     messages.add_message(request, messages.ERROR, "The bid was too low")
@@ -157,43 +162,59 @@ def listing(request, listing_id):
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
                 comment = request.POST["comment"]
-                place_comment(user, comment, listing)
+                place_comment(user, comment, fetched_listing)
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
-        listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
+        if not fetched_listing[0].active:
+            winner = get_winner(fetched_listing)
+
+        listing_in_watchlist = Watchlist.objects.filter(user=user, listing=fetched_listing[0])
         is_watched = bool(listing_in_watchlist)
 
     return render(
         request,
         "auctions/listing.html",
-        {"listing": listing[0], "comments": comments, "is_watched": is_watched, "is_owner": is_owner},
+        {
+            "listing": fetched_listing[0],
+            "comments": comments,
+            "is_watched": is_watched,
+            "is_owner": is_owner,
+            "winner": winner,
+            "user": user,
+        },
     )
 
 
-def toggle_watched(user, listing):
+def toggle_watched(user, listing_param):
     # if watchlist is not found create it
     try:
         watch_list = Watchlist.objects.get(user=user)
-        pass
-    except Exception:
+    except (UnboundLocalError, Watchlist.DoesNotExist):
         watch_list = Watchlist()
         watch_list.user = user
         watch_list.save()
-        pass
 
-    listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing[0])
+    listing_in_watchlist = Watchlist.objects.filter(user=user, listing=listing_param[0])
     is_watched = bool(listing_in_watchlist)
 
     if is_watched:
-        watch_list.listing.remove(Listing.objects.get(pk=listing[0].pk))
+        watch_list.listing.remove(Listing.objects.get(pk=listing_param[0].pk))
     else:
-        watch_list.listing.add(Listing.objects.get(pk=listing[0].pk))
+        watch_list.listing.add(Listing.objects.get(pk=listing_param[0].pk))
 
 
-def place_bid(user, bid, listing):
-    fetched_listing = Listing.objects.get(pk=listing[0].pk)
+def place_bid(bid, user, listing_param):
+    fetched_listing = Listing.objects.get(pk=listing_param[0].pk)
 
     if bid > fetched_listing.price:
+        # place bid
+        new_bid = Bid()
+        new_bid.user = user
+        new_bid.amount = bid
+        new_bid.listing = fetched_listing[0]
+        new_bid.save()
+
+        # update price
         fetched_listing.price = bid
         fetched_listing.save()
         return 0
@@ -201,12 +222,18 @@ def place_bid(user, bid, listing):
         return 1
 
 
-def close_listing(listing):
-    fetched_listing = Listing.objects.get(pk=listing[0].pk)
+def close_listing(listing_param):
+    fetched_listing = Listing.objects.get(pk=listing_param[0].pk)
     fetched_listing.active = False
     fetched_listing.save()
 
 
-def place_comment(user, comment, listing):
-    fetched_comment = Comment(user=user, listing=listing[0], content=comment)
+def get_winner(listing_param):
+    fetched_bids = Bid.objects.all().filter(listing=listing_param[0])
+    winner = fetched_bids.order_by("amount").first()
+    return winner
+
+
+def place_comment(user, comment, listing_param):
+    fetched_comment = Comment(user=user, listing=listing_param[0], content=comment)
     fetched_comment.save()
