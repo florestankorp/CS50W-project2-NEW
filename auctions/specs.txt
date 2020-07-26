@@ -7,7 +7,7 @@ Create Listing:
 		- category
 
 Active Listings Page: 
-	* view all of the currently active auction listings
+	* view all active  auction listings
 	* listings should display details
 	
 Listing Page: 
@@ -16,21 +16,21 @@ Listing Page:
 	* add / remove watchlist item 
 	* bid on an item
 	
-> 	Bidding:
+>> 	Bidding:
 	* bid on item
 	
 	ERRORS:
 	* no bid
 	* bid is too low
 
->	Comenting:
+>>	Comenting:
 	* add comments
 	* display comments
 	
 	ERRORS:
 	* no comment
 	
->	Close auction:
+>>	Close auction:
 	* owner can close auction
 	* display winner
 	* winner can view closed listing

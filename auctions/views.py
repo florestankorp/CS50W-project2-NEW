@@ -120,7 +120,7 @@ def create(request):
 def listing(request, listing_id):
     is_watched = False
     is_owner = False
-    winner = None
+    winning_bid = None
     user = request.user
 
     fetched_listing = Listing.objects.filter(pk=listing_id)
@@ -170,7 +170,7 @@ def listing(request, listing_id):
                 return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
         if not fetched_listing[0].active:
-            winner = get_winner(fetched_listing)
+            winning_bid = get_winning_bid(fetched_listing)
 
         listing_in_watchlist = Watchlist.objects.filter(user=user, listing=fetched_listing[0])
         is_watched = bool(listing_in_watchlist)
@@ -183,7 +183,7 @@ def listing(request, listing_id):
             "comments": comments,
             "is_watched": is_watched,
             "is_owner": is_owner,
-            "winner": winner,
+            "winner": winning_bid,
             "user": user,
         },
     )
@@ -232,10 +232,10 @@ def close_listing(listing_param):
     fetched_listing.save()
 
 
-def get_winner(listing_param):
+def get_winning_bid(listing_param):
     fetched_bids = Bid.objects.all().filter(listing=listing_param[0])
-    winner = fetched_bids.order_by("amount").first()
-    return winner
+    winning_bid = fetched_bids.last()
+    return winning_bid
 
 
 def place_comment(user, comment, listing_param):
