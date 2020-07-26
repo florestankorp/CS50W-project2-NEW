@@ -155,7 +155,6 @@ def listing(request, listing_id):
                     messages.add_message(request, messages.SUCCESS, "Success")
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
                 else:
-                    print("too low 2")
                     messages.add_message(request, messages.ERROR, "The bid was too low", extra_tags="bid")
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
@@ -224,7 +223,6 @@ def place_bid(bid, user, listing_param):
         fetched_listing.save()
         return 0
     else:
-        print("too low")
         return 1
 
 
