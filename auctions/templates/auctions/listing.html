@@ -2,8 +2,9 @@
 {% block body %}
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm listing">
-            <div class="listing-info">
+        <div class="col-sm-6 listing">
+            <div class="listing-info pt-0">
+                <h2>{{listing.title}}</h2>
                 <img src="{{listing.image_url}}"
                      alt="Image for {{listing.title}}">
                 <p class="mt-3 mb-0 bold">Description:</p>
@@ -28,12 +29,12 @@
             </form>
             {% endif %}
         </div>
-        <div class="col-sm">
-            <h2>{{listing.title}}</h2>
+        <div class="col-sm col">
             <p class="card-text">
+                <small class="text-muted">Category: {{listing.get_category_display}}</small> |
                 <small class="text-muted">Starting bid: {{listing.starting_bid}}€</small> |
                 {% if listing.active %}
-                <small class="bold text-primary">Active</small> |
+                <small class="bold text-primary">Active</small>
                 {% else %}
                 <small class="bold text-danger">Closed</small> |
                 {% endif %}
@@ -90,8 +91,8 @@
             </ul>
             {% endif %}
         </div>
-        <div class="col-sm">
-            <div class="mt-90">
+        <div class="col-sm col">
+            <div class="comment-section ">
                 <h3>Comments</h3>
                 {% if request.user.is_authenticated and listing.active %}
                 <form action="{% url 'auctions:listing' listing.pk %}"

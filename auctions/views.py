@@ -4,16 +4,13 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import FieldError
 from django.db import IntegrityError
-from django.db.models import Max
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
 from .models import Bid, Comment, Listing, User, Watchlist
-
-CATEGORIES = (("LAP", "Laptop"), ("CON", "Console"), ("GAD", "Gadget"), ("GAM", "Game"), ("TEL", "TV"))
+from .static.auctions.utils import CATEGORIES
 
 
 class NewListingForm(forms.Form):
@@ -156,10 +153,10 @@ def listing(request, listing_id):
                 # if bid was placed successfully it returns 0
                 if place_bid(bid, user, fetched_listing) == 0:
                     messages.add_message(request, messages.SUCCESS, "Success")
-
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
                 else:
-                    messages.add_message(request, messages.ERROR, "The bid was too low")
+                    print("too low 2")
+                    messages.add_message(request, messages.ERROR, "The bid was too low", extra_tags="bid")
                     return HttpResponseRedirect(reverse("auctions:listing", kwargs={"listing_id": listing_id}))
 
             if "comment" in request.POST:
@@ -219,7 +216,7 @@ def place_bid(bid, user, listing_param):
         new_bid = Bid()
         new_bid.user = user
         new_bid.amount = bid
-        new_bid.listing = fetched_listing[0]
+        new_bid.listing = fetched_listing
         new_bid.save()
 
         # update price
@@ -227,6 +224,7 @@ def place_bid(bid, user, listing_param):
         fetched_listing.save()
         return 0
     else:
+        print("too low")
         return 1
 
 

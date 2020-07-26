@@ -1,0 +1,71 @@
+Create Listing: 
+	* create a new listing with:
+		- title for the listing 
+		- description
+		- starting bid
+		- URL for product image
+		- category
+
+Active Listings Page: 
+	* view all of the currently active auction listings
+	* listings should display details
+	
+Listing Page: 
+	* click to go to single listing page
+	* single listing page displays details
+	* add / remove watchlist item 
+	* bid on an item
+	
+> 	Bidding:
+	* bid on item
+	
+	ERRORS:
+	* no bid
+	* bid is too low
+
+>	Comenting:
+	* add comments
+	* display comments
+	
+	ERRORS:
+	* no comment
+	
+>	Close auction:
+	* owner can close auction
+	* display winner
+	* winner can view closed listing
+
+Watchlist: 
+	* display watchlist. 
+	* click on listing to view details
+
+Categories: 
+* display categories. 
+* click to view items in that category
+
+Django Admin Interface: 
+* admin can view, add, edit, and delete 
+  any listings, comments, and bids
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
