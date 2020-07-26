@@ -36,10 +36,10 @@
                 {% if listing.active %}
                 <small class="bold text-primary">Active</small>
                 {% else %}
-                <small class="bold text-danger">Closed</small> |
+                <small class="bold text-danger">Closed</small>
                 {% endif %}
                 {% if not listing.active %}
-                {% if not winner == user %}
+                {% if winner.user == user %}
                 <small class="text-secondary"><span class="text-info">You</span> are the winner!</small>
                 {% else %}
                 <small class="text-secondary">The winner is <span class="text-info">{{winner.user}}!</span></small>
